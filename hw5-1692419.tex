@@ -1,0 +1,188 @@
+% !TeX encoding = UTF-8
+% !TeX program = pdflatex
+
+\documentclass[11pt]{article}
+
+\title{{\bf Public Key Management} \\ \bigskip \large HW5 - CNS Sapienza}
+\date{2018-11-30}
+\author{Andrea Fioraldi 1692419}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+There are many different encoding and structures for public and private keys.
+We present an overview about the formats using the most widespreads Public-Key Cryptography Standards \cite{pkcs} versions.
+
+\section{DER Encoding}
+
+DER (Distinguished Encoding Rules) is the most popular of the ASN.1 \cite{asn1} encodings.
+
+The encoding of an object follows this structure:
+\begin{enumerate}
+    \item Identifier octets
+    \item Length octets
+    \item Contents octets
+    \item End-of-contents octets 
+\end{enumerate}
+
+Complex data structures can be binary-encoded following this structure (you can for example convert any data stired in JSON).
+
+DER is widely used in cryptography to encode the data structures exposed in the following section.
+
+A DER file has usually the extension \verb|.der| and contains only the binary data encoded using such format.
+
+\section{PEM Files}
+
+PEM (Privacy-Ehanced Mail) is a standard file format for storing keys and it was introduced in \cite{rfc7468}.
+It is used for both public and private keys.
+PEM encode this binary information using base64 and so it is an ASCII format.
+
+The structure is quite simple:
+\begin{enumerate}
+    \item Header: \verb|-----BEGIN| type of cryptographic data \verb|-----|;
+    \item Encoded base64 data, generally encoded with DER;
+    \item Footer: \verb|-----END| type of cryptographic data \verb|-----|;
+\end{enumerate}
+
+Usually, the extension of a PEM file is \verb|.pem|.
+
+Here an example file of an RSA public key:
+
+\begin{verbatim}
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3gmCqlQvCaE9eR31msxo
+mM0lJarQfO/kkxAFVmXuLlOXsCt3Nroj3qs58CadPRh4kBg+4KgegkXzaQ8EVIAE
+eI4WRR3Ku3dVdX8+i7bNuFGlgoSgpIOgAk4s7SNxRWuoUMTIAg1sxpvYzYeTyDdT
+2PjWjkZ3H7M2V3TPoVw9GLoIur0l6Z96vp1LXWX4acocvCZRKLltPQAZiB5c9hXc
+kKhNcRWde/5gopv7qyYxxzPQqU4spKID6afNDMsJ9ldK18YQcQvnjo4mIIoQdvFT
+i7BJLtxhURQjp5CcZrwFT2Fj3V9MNfYS5yRi/fx17ZMlCAFZLbFVwEK7vLdywyZA
+3QIDAQAB
+-----END PUBLIC KEY-----
+\end{verbatim}
+
+\section{Data structures}
+
+Public and Private keys are stored using different data structures.
+We present the most used structures from the Public-Key Cryptography Standards.
+
+\subsection{PKCS\#1}
+
+It is the RSA Cryptography Standard defined in \cite{rfc8017}.
+It defines the ASN.1 encoding of RSA public and private keys.
+
+The DER structure of a public key is the following:
+
+\begin{verbatim}
+RSAPublicKey ::= SEQUENCE {
+    modulus           INTEGER,  -- n
+    publicExponent    INTEGER   -- e
+}
+\end{verbatim}
+
+The structure of a private key is:
+
+\begin{verbatim}
+RSAPrivateKey ::= SEQUENCE {
+  version           Version,
+  modulus           INTEGER,  -- n
+  publicExponent    INTEGER,  -- e
+  privateExponent   INTEGER,  -- d
+  prime1            INTEGER,  -- p
+  prime2            INTEGER,  -- q
+  exponent1         INTEGER,  -- d mod (p-1)
+  exponent2         INTEGER,  -- d mod (q-1)
+  coefficient       INTEGER,  -- (inverse of q) mod p
+  otherPrimeInfos   OtherPrimeInfos OPTIONAL
+}
+\end{verbatim}
+
+\subsection{PKCS\#7}
+
+It is the Cryptographic Message Syntax Standard defined in \cite{rfc2315}.
+It is usually employes in Public Keys infrastructures.
+
+An associated file extesion is \verb|.p7b| when using a PEM file containing data structured following the PKCS\#7 specification.
+
+The DER structure of both public and provate key is based on the following structure:
+
+\begin{verbatim}
+RecipientInfo ::= SEQUENCE 
+{
+    version                 INTEGER,
+    issuerAndSerialNumber   IssuerAndSerialNumber,
+    keyEncryptionAlgorithm  KeyEncryptionAlgId,
+    encryptedKey            EncryptedKey
+} 
+\end{verbatim}
+
+The set of structures that can be chained is large and it is explained in a short summary by Microsoft \cite{mspkcs7}.
+
+\subsection{PKCS\#12}
+
+It is one of the complex formats for storing cryptographical objects.
+
+An associated file extesion is \verb|.pfx| or \verb|.p12| and they are archives containing data structured following the PKCS\#12 specification.
+
+One of the major novelties of this format is that the content can be encrypted in a surgical way in containers calles "SafeBags".
+
+The definition of the structures \cite{pkcs12_struct} is very complex and it was criticized for this in the past.
+
+\subsection{A note on encrypted Private Keys}
+
+It is a commom practice to encrypt the private keys using a simmetric algorithm.
+The most used are AES and 3-DES.
+The previous exposed formats stores fields in order to recognize if a key is crypted and wich algorithm was used.
+
+
+\vfill
+
+\begin{thebibliography}{99}
+
+
+\bibitem{pkcs}
+{\em PKCS - Wikipedia}.
+
+  \verb|https://en.m.wikipedia.org/wiki/PKCS|
+  \newblock Accessed: 2018-12-6.
+
+\bibitem{asn1}
+{\em Abstract Syntax Notation One - Wikipedia}.
+
+  \verb|https://en.wikipedia.org/wiki/Abstract_Syntax_Notation_One|
+  \newblock Accessed: 2018-12-6.
+
+\bibitem{rfc7468}
+{\em RFC 7468}.
+
+  \verb|https://tools.ietf.org/html/rfc7468|
+  \newblock Accessed: 2018-12-6.
+
+\bibitem{rfc8017}
+{\em RFC 8017}.
+
+  \verb|https://tools.ietf.org/html/rfc8017|
+  \newblock Accessed: 2018-12-6.
+
+\bibitem{rfc2315}
+{\em RFC 2315}.
+
+  \verb|https://tools.ietf.org/html/rfc2315|
+  \newblock Accessed: 2018-12-6.
+
+\bibitem{mspkcs7}
+{\em PKCS | Microsoft Docs}.
+
+  \verb|https://docs.microsoft.com/en-us/windows/desktop/seccertenroll/pkcs--7-attributes|
+  \newblock Accessed: 2018-12-6.
+
+\bibitem{pkcs12_struct}
+{\em RFC 7292 - Page 10}.
+
+  \verb|https://tools.ietf.org/html/rfc7292#page-10|
+  \newblock Accessed: 2018-12-6.
+
+\end{thebibliography}
+
+\end{document}
